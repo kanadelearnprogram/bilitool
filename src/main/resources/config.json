@@ -1,0 +1,6 @@
+{
+  "SESSDATA": "B站会话令牌",
+  "sk": "DeepSeek API 密钥",
+  "filepath": "E:\\tools",  // 字幕保存路径
+  "prompt": "少保留习题内容,详细总结解题方法 使用markdown格式,不多于三个子标签"
+}
