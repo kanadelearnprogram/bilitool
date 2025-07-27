@@ -4,12 +4,16 @@ import org.example.config.Config;
 import org.example.model.Video;
 import org.example.utils.ParseVideo;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.example.config.Config.loadConfig;
 import static org.example.utils.ParseBV.extractBVIdFromUrl;
-import static org.example.utils.ParseSubtitle.downloadSubtitles;
-import static org.example.utils.ParseSubtitle.getSubtitleInfo;
+import static org.example.utils.ParseSubtitle.*;
 import static org.example.utils.ParseVideo.getVideoInfo;
 
 /**
@@ -50,11 +54,40 @@ public class SubtitleDownloader {
         Video video = ParseVideo.fromJson(getVideoInfo(bvid));
 
         try {
+            // 创建固定大小的线程池，避免创建过多线程
+            ExecutorService executor = Executors.newFixedThreadPool(
+                    Runtime.getRuntime().availableProcessors());
+
+            // 存储所有的CompletableFuture任务
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+
             for (String cid : video.cidMap.keySet()) {
-                System.out.println("BV->" + bvid + "\t" + "CID->"+cid);
-                String subtitleInfo = getSubtitleInfo(bvid, cid);
-                downloadSubtitles(subtitleInfo,video.cidMap.get(cid));
+                System.out.println("BV->" + bvid + "\t" + "CID->" + cid);
+                // 在lambda表达式中需要final变量
+                final String finalBvid = bvid;
+                final String currentCid = cid;
+                final String partTitle = video.cidMap.get(currentCid);
+
+                // 异步处理每个分P的字幕下载
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    try {
+                        String subtitleInfo = getSubtitleInfo(finalBvid, currentCid);
+                        downloadSubtitlesAsync(subtitleInfo, partTitle);
+                    } catch (Exception e) {
+                        System.err.println("下载字幕时出错 (CID: " + currentCid + "): " + e.getMessage());
+                    }
+                }, executor);
+
+                futures.add(future);
             }
+
+            // 等待所有任务完成
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            // 关闭线程池
+            executor.shutdown();
+
+            System.out.println("所有字幕下载完成");
         } catch (Exception e) {
             System.err.println("下载字幕时出错: " + e.getMessage());
         }
