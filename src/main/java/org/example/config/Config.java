@@ -17,13 +17,27 @@ import java.nio.file.StandardOpenOption;
 public class Config {
     // 配置文件路径
     public static final String CONFIG_PATH = "/config.json";
-
+    private static Config instance;
     public static String cookie = "";
     public static String sk = "";
     public static String filePath = "";
     public static String prompt = "";
     public static String models = "";
 
+    private Config() {
+        loadConfig();
+    }
+
+    public static Config getInstance() {
+        if (instance == null) {
+            synchronized (Config.class) {
+                if (instance == null) {
+                    instance = new Config();
+                }
+            }
+        }
+        return instance;
+    }
     public static void loadConfig() {
         try {
             // 使用类加载器读取资源文件

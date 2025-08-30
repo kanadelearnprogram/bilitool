@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.example.SubtitleDownloader.subtitleList;
+
 public class FileUtils {
     /**
      * 将字幕内容保存到文件。

@@ -45,14 +45,14 @@ public class SubtitleProcessingTest {
         subtitle.setSubtitleList(testContent);
         
         long start = System.currentTimeMillis();
-        CompletableFuture<Void> future = FileUtils.saveSubtitleToFileAsync(subtitle);
+        //CompletableFuture<Void> future = FileUtils.saveSubtitleToFile(subtitle);
         long end = System.currentTimeMillis();
         
         System.out.println("Save subtitle async time: " + (end - start) + " ms");
         
         // 等待异步任务完成
         try {
-            future.join(); // 等待AI处理完成
+            //future.join(); // 等待AI处理完成
             System.out.println("异步任务已完成");
         } catch (Exception e) {
             System.err.println("异步任务执行出错: " + e.getMessage());

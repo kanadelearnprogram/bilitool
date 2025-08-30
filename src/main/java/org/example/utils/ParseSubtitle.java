@@ -90,21 +90,24 @@ public class ParseSubtitle {
         }
 
         // 为每个字幕创建一个线程池
-        ExecutorService executor = Executors.newFixedThreadPool( 
+        ExecutorService executor = Executors.newFixedThreadPool(
                 Math.min(subtitles.size(), 12) );
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        
+
         for (int i = 0; i < subtitles.size(); i++) {
             JSONObject subtitleEntry = subtitles.getJSONObject(i);
             String lan = subtitleEntry.getStr("lan_doc");
             String subtitleUrl = "https:" + subtitleEntry.getStr("subtitle_url");
-            
+
             // 异步处理每个字幕文件的下载和保存
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
+                    System.out.println(subtitleUrl);
                     String subtitleContent = getSubtitleContent(subtitleUrl);
+                    System.out.println(subtitleContent);
                     Subtitle subtitle1 = new Subtitle();
+                    System.out.println(extractContents(subtitleContent));
                     subtitle1.setSubtitleList(extractContents(subtitleContent));
                     subtitle1.setTitle(part);
                     subtitle1.setType(lan);
@@ -113,16 +116,16 @@ public class ParseSubtitle {
                     System.err.println("处理字幕时出错 (" + lan + "): " + e.getMessage());
                 }
             }, executor);
-            
+
             futures.add(future);
         }
-        
+
         // 返回CompletableFuture，调用者可以等待所有任务完成
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        
+
         // 关闭线程池（在所有任务完成后）
         allFutures.thenRun(executor::shutdown);
-        
+
         return allFutures;
     }
     
