@@ -66,7 +66,7 @@ public class ParseSubtitle {
             subtitle1.setTitle(part);
             subtitle1.setType(lan);
             //System.out.println( extractContents(subtitleContent));
-            //saveSubtitleToFile(subtitle1);
+            saveSubtitleToFile(subtitle1);
 
             subtitleList.add(subtitle1);
         }

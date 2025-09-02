@@ -7,6 +7,7 @@ import org.example.utils.AiUtil;
 import org.example.utils.FileUtils;
 import org.example.utils.ParseSubtitle;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,6 +88,8 @@ public class TaskProcessor {
                 List<Subtitle> subtitles = ParseSubtitle.downloadSubtitles(subtitleInfo, partTitle);
 
                 Subtitle subtitle = subtitles.get(0);
+                subtitles.stream().forEach(subtitle1 ->
+                        FileUtils.saveSubtitleToFileAsync(subtitle1));
 
                 String content = AiUtil.AISumarize(subtitle);
                 String title = "AISummarize"+subtitle.getTitle();

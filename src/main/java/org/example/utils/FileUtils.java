@@ -101,11 +101,11 @@ public class FileUtils {
 
         // 清理文件名中的非法字符
         String safeTitle = title.replaceAll("[\\\\/:*?\"<>|]", "_");
-        String safeType = content.replaceAll("[\\\\/:*?\"<>|]", "_");
+        //String safeType = content.replaceAll("[\\\\/:*?\"<>|]", "_");
 
         // 构建完整文件路径，使用File.separator确保跨平台兼容性
-        String fileName = String.format("%s%s subtitle_%s%s.txt", savePath, File.separator, safeType, safeTitle);
-
+        String fileName = String.format("%s%s subtitle_%s.txt", savePath, File.separator, safeTitle);
+        System.out.println(fileName);
         // 确保目录存在
         FileUtil.mkdir(savePath);
 
