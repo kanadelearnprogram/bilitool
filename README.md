@@ -15,7 +15,14 @@ Bilitool 是一个基于Java的B站字幕处理工具，支持字幕下载、AI�
 2. 配置 [Maven 3.x](https://maven.apache.org/) 环境
 3. 修改 `config.json` 配置项
 4. 构建项目：`mvn clean package`
-5. 运行程序：`java -jar bilitool.jar bvid BVXXXXXX`
+5. 运行程序：`java -jar target/bilitool-1.1.jar bvid BVXXXXXX`
+
+### 批量处理模式
+运行批量处理程序：`java -jar bilitool.jar BVXXXXXX BVYYYYYY BVZZZZZZ`
+
+#### 使用批处理脚本
+- Windows: `batch_download.bat BVXXXXXX BVYYYYYY BVZZZZZZ`
+- Linux/Mac: `./batch_download.sh BVXXXXXX BVYYYYYY BVZZZZZZ`
 
 ## 核心功能
 - 从B站视频页面提取字幕数据
@@ -23,6 +30,8 @@ Bilitool 是一个基于Java的B站字幕处理工具，支持字幕下载、AI�
 - 生成两个文件：
   - 原始字幕文件 `subtitle_<类型><标题>.txt`
   - AI总结文件 `ai_summarize_subtitle_<类型><标题>.txt`
+- 支持批量视频处理（多线程）
+- 任务队列管理
 
 ## 配置说明
 查看 [config.json](src/main/resources/config.json) 配置文件：

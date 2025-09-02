@@ -80,7 +80,7 @@ public class FileUtils {
 
         // 构建完整文件路径，使用File.separator确保跨平台兼容性
         String fileName = String.format("%s%s subtitle_%s%s.txt", savePath, File.separator, safeType, safeTitle);
-        String fileName2 = String.format("%s%s ai_summarize_subtitle_%s%s.md", savePath, File.separator, safeType, safeTitle);
+
 
         // 确保目录存在
         FileUtil.mkdir(savePath);
@@ -89,17 +89,29 @@ public class FileUtils {
         FileUtil.writeUtf8String(str.toString(), fileName);
         System.out.println("已保存字幕文件: " + fileName);
 
-        try {
-            Client client = new Client();
-            client.addUserMessage(str.toString());
-            String result = client.send();
-
-            System.out.println(result);
-            FileUtil.writeUtf8String(result, fileName2);
-            System.out.println("已保存AI总结字幕文件: " + fileName2);
-        } catch (Exception e) {
-            System.err.println("AI总结处理失败: " + e.getMessage());
+    }
+    public static void saveStrToFileAsync(String title,String content) {
+        // 使用配置路径或默认当前目录
+        String savePath = Config.filePath;
+        //System.out.println(savePath);
+        // 如果路径为空，使用当前目录
+        if (savePath == null || savePath.isEmpty()) {
+            savePath = ".";
         }
+
+        // 清理文件名中的非法字符
+        String safeTitle = title.replaceAll("[\\\\/:*?\"<>|]", "_");
+        String safeType = content.replaceAll("[\\\\/:*?\"<>|]", "_");
+
+        // 构建完整文件路径，使用File.separator确保跨平台兼容性
+        String fileName = String.format("%s%s subtitle_%s%s.txt", savePath, File.separator, safeType, safeTitle);
+
+        // 确保目录存在
+        FileUtil.mkdir(savePath);
+
+        // 写入原始字幕文件
+        FileUtil.writeUtf8String(content, fileName);
+        System.out.println("已保存字幕文件: " + fileName);
 
     }
 }
