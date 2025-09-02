@@ -32,7 +32,7 @@ public class SubtitleDownloader {
      * 主方法，程序入口。
      * @param args 命令行参数，bvid
      */
-    public static void main(String[] args) {
+   /* public static void main(String[] args) {
         loadConfig();
         if (args.length < 2) {
             System.out.println("请提供 bvid 参数");
@@ -87,7 +87,7 @@ public class SubtitleDownloader {
             }
 
             System.out.println("所有字幕下载完成");
-            /*Client client = new Client();
+            *//*Client client = new Client();
             subtitleList.forEach(subtitle -> {
                 client.addUserMessage(subtitle);
             });
@@ -96,7 +96,7 @@ public class SubtitleDownloader {
             System.out.println(str);
             String fileName = String.format("%s_summary.txt", Config.filePath);
             FileUtil.writeUtf8String(str, fileName);
-            System.out.println("已保存AI总结字幕文件: " + fileName);*/
+            System.out.println("已保存AI总结字幕文件: " + fileName);*//*
         } catch (Exception e) {
             // 自动捕获虚拟线程中的RuntimeException
             Throwable rootCause = (e instanceof CompletionException) ? e.getCause() : e;
@@ -104,5 +104,5 @@ public class SubtitleDownloader {
             e.printStackTrace();
         }
     }
-
+*/
 }

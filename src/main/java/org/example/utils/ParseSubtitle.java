@@ -38,7 +38,7 @@ public class ParseSubtitle {
      * 下载字幕文件。
      * @param subtitleInfo 字幕信息的 JSON 字符串。
      */
-    public static void downloadSubtitles(String subtitleInfo, String part) {
+    public static List<Subtitle> downloadSubtitles(String subtitleInfo, String part) {
         JSONObject jsonObject = JSONUtil.parseObj(subtitleInfo);
         JSONObject data = jsonObject.getJSONObject("data");
         JSONObject subtitle = data.getJSONObject("subtitle");
@@ -50,8 +50,10 @@ public class ParseSubtitle {
         }else {
             //System.out.println(data);
             System.out.println(part + "无字幕");
-            return;
+            return null;
         }
+
+        List<Subtitle> subtitleList = new ArrayList<>();
 
         for (int i = 0; i < subtitles.size(); i++) {
             JSONObject subtitleEntry = subtitles.getJSONObject(i);
@@ -64,8 +66,11 @@ public class ParseSubtitle {
             subtitle1.setTitle(part);
             subtitle1.setType(lan);
             //System.out.println( extractContents(subtitleContent));
-            saveSubtitleToFile(subtitle1);
+            //saveSubtitleToFile(subtitle1);
+
+            subtitleList.add(subtitle1);
         }
+        return subtitleList;
     }
     
     /**
