@@ -1,12 +1,15 @@
 package org.example;
 
 import org.example.config.Config;
-import org.example.processor.BatchProcessingService;
-import org.example.service.VideoService;
-import org.example.utils.ParseBV;
+import org.example.model.Subtitle;
+import org.example.model.Video;
+import org.example.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.example.config.Config.loadConfig;
 
@@ -29,12 +32,6 @@ public class BatchSubtitleDownloader {
             return;
         }
         
-        // 创建视频服务
-        VideoService videoService = new VideoService();
-        
-        // 创建批量处理服务
-        BatchProcessingService batchProcessingService = new BatchProcessingService(videoService, 5);
-        
         // 解析命令行参数中的BVID
         List<String> bvids = new ArrayList<>();
         for (String arg : args) {
@@ -49,26 +46,80 @@ public class BatchSubtitleDownloader {
             return;
         }
         
-        // 添加视频到处理队列
-        batchProcessingService.addVideosToQueue(bvids);
-        
-        // 开始批量处理
-        batchProcessingService.startBatchProcessing();
-        
-        try {
-            // 等待所有任务完成
-            batchProcessingService.waitForCompletion();
+        // 使用虚拟线程处理批量任务
+        try (ExecutorService executor = AsyncUtil.createVirtualThreadExecutor()) {
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
             
-            // 输出处理结果
+            for (String bvid : bvids) {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> processVideo(bvid), executor);
+                futures.add(future);
+            }
+            
+            // 等待所有任务完成
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            
             System.out.println("批量处理完成");
-            System.out.println("成功处理任务数: " + batchProcessingService.getCompletedTasks());
-            System.out.println("失败任务数: " + batchProcessingService.getFailedTasks());
-        } catch (InterruptedException e) {
-            System.err.println("等待任务完成时被中断");
-            Thread.currentThread().interrupt();
-        } finally {
-            // 关闭批量处理服务
-            batchProcessingService.shutdown();
+        } catch (Exception e) {
+            System.err.println("批量处理过程中发生错误: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 处理单个视频
+     * @param bvid 视频BVID
+     */
+    private static void processVideo(String bvid) {
+        try {
+            System.out.println("开始处理视频: " + bvid);
+            
+            Video video = ParseVideo.fromJson(ParseVideo.getVideoInfo(bvid));
+            ExecutorService executor = AsyncUtil.createVirtualThreadExecutor();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            // 处理视频的每个分P
+            for (String cid : video.getCidMap().keySet()) {
+                String partTitle = video.getCidMap().get(cid);
+                System.out.println("处理视频 " + bvid + " 的分P " + partTitle + " (CID: " + cid + ")");
+                
+                try {
+                    // 获取字幕信息
+                    String subtitleInfo = ParseSubtitle.getSubtitleInfo(bvid, cid);
+                    
+                    // 下载字幕
+                    List<Subtitle> subtitles = ParseSubtitle.downloadSubtitles(subtitleInfo, partTitle);
+                    
+                    if (subtitles != null) {
+                        for (Subtitle subtitle : subtitles) {
+                            FileUtils.saveSubtitleToFile(subtitle);
+                            System.out.println("save subtitle ->" + subtitle.getTitle());
+                            // 异步进行AI总结，不等待完成
+                            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                                try {
+                                    String summary = AIUtil.summarize(subtitle);
+                                    if (summary != null) {
+                                        FileUtils.saveStrToFile(subtitle.getTitle(), summary, "AISummarize");
+                                        System.out.println("save AISummarize" + subtitle.getTitle());
+                                    }
+                                } catch (Exception e) {
+                                    System.err.println("AI总结失败: " + e.getMessage());
+                                }
+                            }, executor);
+                            futures.add(future);
+                        }
+                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+                    }
+                    
+                    System.out.println("视频 " + bvid + " 的分P " + partTitle + " 处理完成");
+                } catch (Exception e) {
+                    System.err.println("处理视频 " + bvid + " 的分P " + partTitle + " 时发生错误: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
+            System.out.println("视频 " + bvid + " 处理完成");
+        } catch (Exception e) {
+            System.err.println("处理视频 " + bvid + " 时出错: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

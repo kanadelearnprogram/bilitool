@@ -66,7 +66,7 @@ public class ParseSubtitle {
             subtitle1.setTitle(part);
             subtitle1.setType(lan);
             //System.out.println( extractContents(subtitleContent));
-            saveSubtitleToFile(subtitle1);
+            //saveSubtitleToFile(subtitle1);
 
             subtitleList.add(subtitle1);
         }
@@ -116,7 +116,7 @@ public class ParseSubtitle {
                     subtitle1.setSubtitleList(extractContents(subtitleContent));
                     subtitle1.setTitle(part);
                     subtitle1.setType(lan);
-                    saveSubtitleToFileAsync(subtitle1);
+                    //saveSubtitleToFileAsync(subtitle1);
                 } catch (Exception e) {
                     System.err.println("处理字幕时出错 (" + lan + "): " + e.getMessage());
                 }
